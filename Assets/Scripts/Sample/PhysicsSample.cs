@@ -2,13 +2,15 @@ using Mathematica;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Physics = Mathematica.Physics;
 
 public class PhysicsSample : MonoBehaviour
 {
-    public int length = 10;
+    public int length = 0;
     Dictionary<GameObject, AABB> AABBs = new Dictionary<GameObject, AABB>();
     Dictionary<GameObject, OBB> OBBs = new Dictionary<GameObject, OBB>();
     Dictionary<GameObject, Sphere> Spheres = new Dictionary<GameObject, Sphere>();
+    Dictionary<GameObject, Capsule> Capsules = new Dictionary<GameObject, Capsule>();
     void Start()
     {
         for (int i = 0; i < length; i++)
@@ -55,6 +57,24 @@ public class PhysicsSample : MonoBehaviour
             go.name = "Sphere" + i;
             Spheres.Add(go, sphere);
         }
+        for (int i = 0; i < length; i++)
+        {
+            GameObject go = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            go.transform.position = UnityEngine.Random.insideUnitSphere * 10;
+
+            go.transform.localScale = go.transform.localScale * UnityEngine.Random.Range(1, 3);
+            Capsule sphere = new Capsule(UnityUtils.math.fix3(go.GetComponent<CapsuleCollider>().center),
+                go.GetComponent<CapsuleCollider>().radius * go.transform.localScale.x,
+                go.GetComponent<CapsuleCollider>().height * go.transform.localScale.y,
+                quaternion.identity,
+                fix3.up);
+
+            go.AddComponent<Speed>().speed = UnityEngine.Random.Range(1, 3);
+            go.AddComponent<Center>().value = UnityEngine.Random.insideUnitSphere * 5;
+            go.AddComponent<Axis>().value = UnityEngine.Random.insideUnitSphere;
+            go.name = "Capsule" + i;
+            Capsules.Add(go, sphere);
+        }
     }
     void Update()
     {
@@ -84,9 +104,19 @@ public class PhysicsSample : MonoBehaviour
             item.GetComponent<MeshRenderer>().material.color = new Color(137 / 255f, 190 / 255f, 138 / 255f);
         }
 
+        foreach (var item in Capsules.Keys.ToList())
+        {
+            item.transform.RotateAround(item.GetComponent<Center>().value, item.GetComponent<Axis>().value, item.GetComponent<Speed>().speed * Time.deltaTime * 10);
+            Capsule obb = Capsules[item];
+            obb.Update(UnityUtils.math.fix3(item.transform.position), UnityUtils.math.quaternion(item.transform.rotation));
+            Capsules[item] = obb;
+            item.GetComponent<MeshRenderer>().material.color = Color.cyan;
+        }
+
         AABBDetect();
         OBBDetect();
         SphereDetect();
+        CapsuleDetect();
     }
 
     void AABBDetect()
@@ -99,7 +129,7 @@ public class PhysicsSample : MonoBehaviour
             {
                 if (item.Key == item1.Key)
                     continue;
-                if (Geometry.IsOverlap(item.Value, item1.Value))
+                if (Physics.IsOverlap(item.Value, item1.Value, Physics.Axis.AnyAxis))
                 {
                     item.Key.GetComponent<MeshRenderer>().material.color = Color.red;
                     item1.Key.GetComponent<MeshRenderer>().material.color = Color.red;
@@ -108,7 +138,7 @@ public class PhysicsSample : MonoBehaviour
 
             foreach (var item1 in OBBs)
             {
-                if (Geometry.IsOverlap(item.Value, item1.Value))
+                if (Physics.IsOverlap(item.Value, item1.Value, Physics.Axis.AnyAxis))
                 {
                     item.Key.GetComponent<MeshRenderer>().material.color = Color.red;
                     item1.Key.GetComponent<MeshRenderer>().material.color = Color.red;
@@ -117,7 +147,16 @@ public class PhysicsSample : MonoBehaviour
 
             foreach (var item1 in Spheres)
             {
-                if (Geometry.IsOverlap(item.Value, item1.Value))
+                if (Physics.IsOverlap(item.Value, item1.Value, Physics.Axis.AnyAxis))
+                {
+                    item.Key.GetComponent<MeshRenderer>().material.color = Color.red;
+                    item1.Key.GetComponent<MeshRenderer>().material.color = Color.red;
+                }
+            }
+
+            foreach (var item1 in Capsules)
+            {
+                if (Physics.IsOverlap(item.Value, item1.Value, Physics.Axis.AnyAxis))
                 {
                     item.Key.GetComponent<MeshRenderer>().material.color = Color.red;
                     item1.Key.GetComponent<MeshRenderer>().material.color = Color.red;
@@ -136,7 +175,7 @@ public class PhysicsSample : MonoBehaviour
             {
                 if (item.Key == item1.Key)
                     continue;
-                if (Geometry.IsOverlap(item.Value, item1.Value))
+                if (Physics.IsOverlap(item.Value, item1.Value, Physics.Axis.AnyAxis))
                 {
                     item.Key.GetComponent<MeshRenderer>().material.color = Color.red;
                     item1.Key.GetComponent<MeshRenderer>().material.color = Color.red;
@@ -145,7 +184,7 @@ public class PhysicsSample : MonoBehaviour
 
             foreach (var item1 in AABBs)
             {
-                if (Geometry.IsOverlap(item.Value, item1.Value))
+                if (Physics.IsOverlap(item.Value, item1.Value, Physics.Axis.AnyAxis))
                 {
                     item.Key.GetComponent<MeshRenderer>().material.color = Color.red;
                     item1.Key.GetComponent<MeshRenderer>().material.color = Color.red;
@@ -154,7 +193,16 @@ public class PhysicsSample : MonoBehaviour
 
             foreach (var item1 in Spheres)
             {
-                if (Geometry.IsOverlap(item.Value, item1.Value))
+                if (Physics.IsOverlap(item.Value, item1.Value, Physics.Axis.AnyAxis))
+                {
+                    item.Key.GetComponent<MeshRenderer>().material.color = Color.red;
+                    item1.Key.GetComponent<MeshRenderer>().material.color = Color.red;
+                }
+            }
+
+            foreach (var item1 in Capsules)
+            {
+                if (Physics.IsOverlap(item.Value, item1.Value, Physics.Axis.AnyAxis))
                 {
                     item.Key.GetComponent<MeshRenderer>().material.color = Color.red;
                     item1.Key.GetComponent<MeshRenderer>().material.color = Color.red;
@@ -173,7 +221,7 @@ public class PhysicsSample : MonoBehaviour
             {
                 if (item.Key == item1.Key)
                     continue;
-                if (Geometry.IsOverlap(item.Value, item1.Value))
+                if (Physics.IsOverlap(item.Value, item1.Value, Physics.Axis.AnyAxis))
                 {
                     item.Key.GetComponent<MeshRenderer>().material.color = Color.red;
                     item1.Key.GetComponent<MeshRenderer>().material.color = Color.red;
@@ -182,7 +230,7 @@ public class PhysicsSample : MonoBehaviour
 
             foreach (var item1 in AABBs)
             {
-                if (Geometry.IsOverlap(item.Value, item1.Value))
+                if (Physics.IsOverlap(item.Value, item1.Value, Physics.Axis.AnyAxis))
                 {
                     item.Key.GetComponent<MeshRenderer>().material.color = Color.red;
                     item1.Key.GetComponent<MeshRenderer>().material.color = Color.red;
@@ -191,7 +239,16 @@ public class PhysicsSample : MonoBehaviour
 
             foreach (var item1 in OBBs)
             {
-                if (Geometry.IsOverlap(item.Value, item1.Value))
+                if (Physics.IsOverlap(item.Value, item1.Value, Physics.Axis.AnyAxis))
+                {
+                    item.Key.GetComponent<MeshRenderer>().material.color = Color.red;
+                    item1.Key.GetComponent<MeshRenderer>().material.color = Color.red;
+                }
+            }
+
+            foreach (var item1 in Capsules)
+            {
+                if (Physics.IsOverlap(item.Value, item1.Value, Physics.Axis.AnyAxis))
                 {
                     item.Key.GetComponent<MeshRenderer>().material.color = Color.red;
                     item1.Key.GetComponent<MeshRenderer>().material.color = Color.red;
@@ -200,4 +257,48 @@ public class PhysicsSample : MonoBehaviour
         }
     }
 
+    void CapsuleDetect()
+    {
+
+        foreach (var item in Capsules)
+        {
+            foreach (var item1 in Capsules)
+            {
+                if (item.Key == item1.Key)
+                    continue;
+                if (Physics.IsOverlap(item.Value, item1.Value, Physics.Axis.AnyAxis))
+                {
+                    item.Key.GetComponent<MeshRenderer>().material.color = Color.red;
+                    item1.Key.GetComponent<MeshRenderer>().material.color = Color.red;
+                }
+            }
+
+            foreach (var item1 in AABBs)
+            {
+                if (Physics.IsOverlap(item.Value, item1.Value, Physics.Axis.AnyAxis))
+                {
+                    item.Key.GetComponent<MeshRenderer>().material.color = Color.red;
+                    item1.Key.GetComponent<MeshRenderer>().material.color = Color.red;
+                }
+            }
+
+            foreach (var item1 in OBBs)
+            {
+                if (Physics.IsOverlap(item.Value, item1.Value, Physics.Axis.AnyAxis))
+                {
+                    item.Key.GetComponent<MeshRenderer>().material.color = Color.red;
+                    item1.Key.GetComponent<MeshRenderer>().material.color = Color.red;
+                }
+            }
+
+            foreach (var item1 in Spheres)
+            {
+                if (Physics.IsOverlap(item.Value, item1.Value, Physics.Axis.AnyAxis))
+                {
+                    item.Key.GetComponent<MeshRenderer>().material.color = Color.red;
+                    item1.Key.GetComponent<MeshRenderer>().material.color = Color.red;
+                }
+            }
+        }
+    }
 }
