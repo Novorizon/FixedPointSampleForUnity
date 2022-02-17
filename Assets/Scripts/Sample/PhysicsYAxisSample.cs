@@ -11,6 +11,14 @@ public class PhysicsYAxisSample : MonoBehaviour
     Dictionary<GameObject, OBB> OBBs = new Dictionary<GameObject, OBB>();
     Dictionary<GameObject, Sphere> Spheres = new Dictionary<GameObject, Sphere>();
     Dictionary<GameObject, Capsule> Capsules = new Dictionary<GameObject, Capsule>();
+
+    Color[] color = new Color[]
+    {
+                new Color(127 / 255f, 232 / 255f, 10 / 255f),//
+                new Color(34 / 255f, 139 / 255f, 34 / 255f),//
+                new Color(50 / 255f, 150 / 255f, 200 / 255f),//
+                new Color(255 / 255f, 250 / 255f, 250 / 255f),//
+    };
     void Start()
     {
         for (int i = 0; i < length; i++)
@@ -80,7 +88,7 @@ public class PhysicsYAxisSample : MonoBehaviour
             AABB aabb = AABBs[item];
             aabb.Update(UnityUtils.math.fix3(item.transform.position));
             AABBs[item] = aabb;
-            item.GetComponent<MeshRenderer>().material.color = Color.green;
+            item.GetComponent<MeshRenderer>().material.color = color[0];
         }
 
         foreach (var item in OBBs.Keys.ToList())
@@ -89,7 +97,7 @@ public class PhysicsYAxisSample : MonoBehaviour
             OBB obb = OBBs[item];
             obb.Update(UnityUtils.math.fix3(item.transform.position), UnityUtils.math.quaternion(item.transform.rotation));
             OBBs[item] = obb;
-            item.GetComponent<MeshRenderer>().material.color = Color.yellow;
+            item.GetComponent<MeshRenderer>().material.color = color[1];
         }
 
         foreach (var item in Spheres.Keys.ToList())
@@ -98,7 +106,7 @@ public class PhysicsYAxisSample : MonoBehaviour
             Sphere sphere = Spheres[item];
             sphere.Update(UnityUtils.math.fix3(item.transform.position));
             Spheres[item] = sphere;
-            item.GetComponent<MeshRenderer>().material.color = new Color(137 / 255f, 190 / 255f, 138 / 255f);
+            item.GetComponent<MeshRenderer>().material.color = color[2];
         }
 
 
@@ -108,7 +116,7 @@ public class PhysicsYAxisSample : MonoBehaviour
             Capsule obb = Capsules[item];
             obb.Update(UnityUtils.math.fix3(item.transform.position), UnityUtils.math.quaternion(item.transform.rotation));
             Capsules[item] = obb;
-            item.GetComponent<MeshRenderer>().material.color = Color.cyan;
+            item.GetComponent<MeshRenderer>().material.color = color[3];
         }
         AABBDetect();
         OBBDetect();
